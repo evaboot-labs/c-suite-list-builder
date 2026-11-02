@@ -15,11 +15,11 @@ cd c-suite-list-builder
 cp .env.example .env
 ```
 
-Write your key from [dash.evaboot.com/dash/api/](https://dash.evaboot.com/dash/api/) into `.env` as `EVABOOT_API_KEY`. The script and `.mcp.json` both read it.
+Write your key from [dash.evaboot.com/dash/api/](https://dash.evaboot.com/dash/api/) into `.env` as `EVABOOT_API_KEY`. The script reads `.env`. `.mcp.json` reads the variable from your shell, so load it before you start Claude Code: `set -a; source .env; set +a; claude`.
 
 ## 3. Connect the MCP server
 
-- **Claude Code:** start it from this folder. `.mcp.json` connects `https://mcp.evaboot.com/mcp` with your key.
+- **Claude Code:** start it from this folder, with the key loaded as above. `.mcp.json` connects `https://mcp.evaboot.com/mcp`. A 401 from the evaboot server means the variable is not set.
 - **Claude (web and desktop app):** *Settings > Connectors > Add custom connector*, name `Evaboot`, URL `https://mcp.evaboot.com/mcp`, then sign in to Evaboot.
 - **Codex, Cursor:** add `https://mcp.evaboot.com/mcp` as an HTTP MCP server with the header `Authorization: Bearer <your key>`.
 

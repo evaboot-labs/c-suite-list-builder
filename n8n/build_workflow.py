@@ -60,8 +60,11 @@ const titleFilter = r => {
 const SEARCH = 'https://www.linkedin.com/sales/search/people?query=';
 let base = null;
 if (s.base_search_url) {
-  base = decodeURIComponent(decodeURIComponent(s.base_search_url.split('query=')[1].split('&')[0]));
+  const q = s.base_search_url.split('query=')[1];
+  if (!q) throw new Error('base_search_url is not a Sales Navigator people search URL (no query=).');
+  base = decodeURIComponent(decodeURIComponent(q.split('&')[0]));
   if (base.includes('type:CURRENT_TITLE')) throw new Error('Remove the job title filter from your base search.');
+  if (!base.includes('filters:List(')) throw new Error('The base search has no filters. Copy the URL of a people search with your filters.');
   base = base.replace(/text:([^,)]*)/g, (m, t) => 'text:' + encodeURIComponent(t))
              .replace(/recentSearchParam:\(id:\d+,doLogHistory:true\),?/, '');
 }

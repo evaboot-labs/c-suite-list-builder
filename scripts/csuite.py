@@ -4,6 +4,7 @@
   python3 scripts/csuite.py roles                                  # the role keys and their title phrases
   python3 scripts/csuite.py urls  --roles cdo-data,ciso [--base-url URL]
   python3 scripts/csuite.py export --roles cdo-data,ciso [--base-url URL] --max 10 --out data/run1 --yes
+  python3 scripts/csuite.py fetch data/run1                         # resume waiting for a run's exports
   python3 scripts/csuite.py clean data/run1 [--keep-riskier]
 
 `export` spends Evaboot credits (1 per lead, email included) and needs EVABOOT_API_KEY in .env.
@@ -17,6 +18,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 from urllib.parse import quote, unquote
@@ -54,6 +56,8 @@ def role_url(role, base_url=None):
     """One people search per role: the base search's filters plus this role's title filter."""
     if not base_url:
         return f"{SEARCH}(filters:List({title_filter(role)}))"
+    if "query=" not in base_url:
+        sys.exit("The base URL is not a Sales Navigator people search (no query=). Copy it again from the address bar.")
     query = unquote(unquote(base_url.split("query=", 1)[1].split("&")[0]))
     if "type:CURRENT_TITLE" in query:
         sys.exit("The base search already has a Current job title filter. Remove it in Sales Navigator, copy the URL again.")
@@ -74,7 +78,10 @@ def mcp(tool, args):
     req = urllib.request.Request(MCP_URL, body, {
         "Authorization": f"Bearer {key}", "Content-Type": "application/json",
         "Accept": "application/json, text/event-stream", "User-Agent": "c-suite-list-builder"})
-    raw = urllib.request.urlopen(req, timeout=180).read().decode()
+    try:
+        raw = urllib.request.urlopen(req, timeout=180).read().decode()
+    except urllib.error.HTTPError as e:
+        sys.exit(f"Evaboot {tool} failed: HTTP {e.code} {e.read().decode()[:300]}")
     data = json.loads(raw.split("data: ", 1)[1] if raw.startswith("event:") else raw)
     res = data.get("result") or {}
     if res.get("isError") or "error" in data:
@@ -111,22 +118,34 @@ def cmd_export(a):
         sys.exit("Sales Navigator is not connected in Evaboot: open a search in Chrome and click Export with Evaboot once.")
     if not a.yes:
         sys.exit("Nothing exported. Run again with --yes once the user agreed to the cost.")
-    raw = Path(a.out) / "raw"
-    raw.mkdir(parents=True, exist_ok=True)
+    Path(a.out).mkdir(parents=True, exist_ok=True)
     jobs = {}
     for role in roles:
         r = mcp("export_sn_search_or_list", {"search_url": role_url(role, a.base_url),
                                              "name": f"{a.name} - {role}", "max_results": a.max})
         jobs[role] = r["extraction_id"]
+        (Path(a.out) / "exports.json").write_text(json.dumps(jobs, indent=2) + "\n")
         print(f"{role}: export {r['extraction_id']} started")
-    (Path(a.out) / "exports.json").write_text(json.dumps(jobs, indent=2) + "\n")
+    fetch(Path(a.out))
+
+
+def fetch(run):
+    """Wait for each export in <run>/exports.json and save it to <run>/raw/<role>.json."""
+    jobs = json.loads((run / "exports.json").read_text(encoding="utf-8"))
+    raw = run / "raw"
+    raw.mkdir(parents=True, exist_ok=True)
     for role, xid in jobs.items():
-        for _ in range(60):
+        if (raw / f"{role}.json").exists():
+            continue
+        deadline = time.time() + 30 * 60
+        while True:
             r = mcp("get_export", {"extraction_id": xid})
             if r["status"] in ("EXECUTED", "FAILED"):
                 break
+            if time.time() > deadline:
+                sys.exit(f"{role}: export {xid} is still {r['status']}. Run later: python3 scripts/csuite.py fetch {run}")
             time.sleep(20)
-        (raw / f"{role}.json").write_text(json.dumps(r, indent=1, ensure_ascii=False))
+        (raw / f"{role}.json").write_text(json.dumps(r, indent=1, ensure_ascii=False), encoding="utf-8")
         print(f"{role}: {r['status']}, {len(r.get('prospects') or [])} leads")
 
 
@@ -157,7 +176,7 @@ def cmd_clean(a):
     kept, review, summary, seen = [], [], {}, {}
     for f in files:
         role = f.stem
-        prospects = json.loads(f.read_text()).get("prospects") or []
+        prospects = json.loads(f.read_text(encoding="utf-8")).get("prospects") or []
         s = summary[role] = {"exported": len(prospects), "right_title": 0, "matches_filters": 0,
                              "email_found": 0, "safe": 0, "riskier": 0, "invalid": 0, "kept": 0}
         for p in prospects:
@@ -192,14 +211,14 @@ def cmd_clean(a):
             else:
                 review.append({**row, "reason": why})
     for name, rows in (("c-suite-list.csv", kept), ("review.csv", review)):
-        with open(run / name, "w", newline="") as fh:
+        with open(run / name, "w", newline="", encoding="utf-8") as fh:
             cols = list(rows[0].keys()) if rows else ["role"]
             w = csv.DictWriter(fh, fieldnames=cols)
             w.writeheader()
             w.writerows(rows)
     total = {k: sum(s[k] for s in summary.values()) for k in next(iter(summary.values()))}
     summary["total"] = total
-    (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    (run / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     print(f"{'role':20} exported  title  match  found  safe  kept")
     for role, s in summary.items():
         print(f"{role:20} {s['exported']:8} {s['right_title']:6} {s['matches_filters']:6} "
@@ -221,6 +240,9 @@ def main():
             p.add_argument("--name", default="C-suite list")
             p.add_argument("--yes", action="store_true", help="the user agreed to the cost")
         p.set_defaults(fn=fn)
+    p = sub.add_parser("fetch", help="wait for the exports of a run and save them")
+    p.add_argument("run")
+    p.set_defaults(fn=lambda a: fetch(Path(a.run)))
     p = sub.add_parser("clean")
     p.add_argument("run")
     p.add_argument("--keep-riskier", action="store_true", help="keep riskier emails too (catch-all domains)")
