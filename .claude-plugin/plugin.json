@@ -1,0 +1,13 @@
+{
+  "name": "c-suite-list-builder",
+  "version": "1.0.0",
+  "description": "Build a C-level email list for any set of chief roles (CDO, CPO, CLO, CCO, CISO and 31 more): exact Sales Navigator title filters, one Evaboot export per role, and a cleaning pass on title, filters and email status.",
+  "author": { "name": "Evaboot", "url": "https://evaboot.com" },
+  "homepage": "https://evaboot.com/blog/c-level-executive-email-list",
+  "repository": "https://github.com/evaboot-labs/c-suite-list-builder",
+  "license": "MIT",
+  "privacyPolicyUrl": "https://evaboot.com/privacy-policy",
+  "keywords": ["sales-navigator", "c-suite", "c-level", "email-list", "evaboot", "mcp", "lead-list", "n8n"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

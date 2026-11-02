@@ -1,0 +1,388 @@
+{
+  "name": "C-suite list builder (Sales Navigator + Evaboot)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5ccf9d58-d5cb-4c4e-b0af-4735b4091f76",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b018ac7-f26f-4c84-a759-98c357ecb5f5",
+              "name": "roles",
+              "type": "string",
+              "value": "cdo-data,cpo-product,clo-legal"
+            },
+            {
+              "id": "4aa95417-28ed-4481-b1d6-74a863183ba6",
+              "name": "base_search_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "d4fae32a-5a33-4dc0-a2d0-be9c8a4130bd",
+              "name": "max_per_role",
+              "type": "number",
+              "value": 10
+            },
+            {
+              "id": "bf10f061-506e-451b-88bf-68d63160a8ac",
+              "name": "list_name",
+              "type": "string",
+              "value": "C-suite list"
+            },
+            {
+              "id": "30e14748-61d2-4cd2-a88a-94040c515585",
+              "name": "keep_riskier",
+              "type": "boolean",
+              "value": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a497234b-8a2b-44fd-b907-cfec228827d5",
+      "name": "Your settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const CATALOG = {\"exclude\": [\"Chief of Staff\", \"Office of the\", \"Assistant to\", \"Deputy\", \"Fractional\", \"Virtual\", \"vCISO\", \"Advisor to\"], \"roles\": {\"ceo\": {\"acronym\": \"CEO\", \"include\": [\"Chief Executive Officer\"]}, \"cfo\": {\"acronym\": \"CFO\", \"include\": [\"Chief Financial Officer\"]}, \"coo\": {\"acronym\": \"COO\", \"include\": [\"Chief Operating Officer\"]}, \"cto\": {\"acronym\": \"CTO\", \"include\": [\"Chief Technology Officer\"]}, \"cmo\": {\"acronym\": \"CMO\", \"include\": [\"Chief Marketing Officer\"]}, \"cro-revenue\": {\"acronym\": \"CRO\", \"include\": [\"Chief Revenue Officer\"], \"confused_with\": [\"cro-risk\"]}, \"chro\": {\"acronym\": \"CHRO\", \"include\": [\"Chief Human Resources Officer\"], \"confused_with\": [\"cpo-people\"]}, \"cdo-data\": {\"acronym\": \"CDO\", \"include\": [\"Chief Data Officer\", \"Chief Data and Analytics Officer\"], \"confused_with\": [\"cdo-digital\", \"cdo-diversity\"]}, \"cdo-digital\": {\"acronym\": \"CDO\", \"include\": [\"Chief Digital Officer\"], \"confused_with\": [\"cdo-data\", \"cdo-diversity\"]}, \"cdo-diversity\": {\"acronym\": \"CDO\", \"include\": [\"Chief Diversity Officer\"], \"confused_with\": [\"cdo-data\", \"cdo-digital\"]}, \"cpo-product\": {\"acronym\": \"CPO\", \"include\": [\"Chief Product Officer\"], \"confused_with\": [\"cpo-people\", \"cpo-procurement\", \"cpo-privacy\"]}, \"cpo-people\": {\"acronym\": \"CPO\", \"include\": [\"Chief People Officer\"], \"confused_with\": [\"cpo-product\", \"cpo-procurement\", \"cpo-privacy\", \"chro\"]}, \"cpo-procurement\": {\"acronym\": \"CPO\", \"include\": [\"Chief Procurement Officer\"], \"confused_with\": [\"cpo-product\", \"cpo-people\", \"cpo-privacy\"]}, \"cpo-privacy\": {\"acronym\": \"CPO\", \"include\": [\"Chief Privacy Officer\"], \"confused_with\": [\"cpo-product\", \"cpo-people\", \"cpo-procurement\"]}, \"clo-legal\": {\"acronym\": \"CLO\", \"include\": [\"Chief Legal Officer\"], \"confused_with\": [\"clo-learning\"]}, \"clo-learning\": {\"acronym\": \"CLO\", \"include\": [\"Chief Learning Officer\"], \"confused_with\": [\"clo-legal\"]}, \"cco-commercial\": {\"acronym\": \"CCO\", \"include\": [\"Chief Commercial Officer\"], \"confused_with\": [\"cco-customer\", \"cco-compliance\", \"cco-communications\", \"cco-creative\"]}, \"cco-compliance\": {\"acronym\": \"CCO\", \"include\": [\"Chief Compliance Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-customer\", \"cco-communications\", \"cco-creative\"]}, \"cco-creative\": {\"acronym\": \"CCO\", \"include\": [\"Chief Creative Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-customer\", \"cco-compliance\", \"cco-communications\"]}, \"cco-customer\": {\"acronym\": \"CCO\", \"include\": [\"Chief Customer Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-compliance\", \"cco-communications\", \"cco-creative\"]}, \"cco-communications\": {\"acronym\": \"CCO\", \"include\": [\"Chief Communications Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-customer\", \"cco-compliance\", \"cco-creative\"]}, \"ciso\": {\"acronym\": \"CISO\", \"include\": [\"Chief Information Security Officer\"], \"acronym_ok\": true}, \"cio-information\": {\"acronym\": \"CIO\", \"include\": [\"Chief Information Officer\"], \"confused_with\": [\"cio-investment\"]}, \"cio-investment\": {\"acronym\": \"CIO\", \"include\": [\"Chief Investment Officer\"], \"confused_with\": [\"cio-information\"]}, \"cso-strategy\": {\"acronym\": \"CSO\", \"include\": [\"Chief Strategy Officer\"], \"confused_with\": [\"cso-sales\", \"cso-security\", \"cso-science\", \"cso-sustainability\"]}, \"cso-sales\": {\"acronym\": \"CSO\", \"include\": [\"Chief Sales Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-security\", \"cso-science\", \"cso-sustainability\"]}, \"cso-science\": {\"acronym\": \"CSO\", \"include\": [\"Chief Scientific Officer\", \"Chief Science Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-sales\", \"cso-security\", \"cso-sustainability\"]}, \"cso-security\": {\"acronym\": \"CSO\", \"include\": [\"Chief Security Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-sales\", \"cso-science\", \"cso-sustainability\", \"ciso\"]}, \"cso-sustainability\": {\"acronym\": \"CSO\", \"include\": [\"Chief Sustainability Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-sales\", \"cso-science\", \"cso-security\"]}, \"cro-risk\": {\"acronym\": \"CRO\", \"include\": [\"Chief Risk Officer\"], \"confused_with\": [\"cro-revenue\"]}, \"caio\": {\"acronym\": \"CAIO\", \"include\": [\"Chief AI Officer\", \"Chief Artificial Intelligence Officer\"], \"acronym_ok\": true}, \"cgo\": {\"acronym\": \"CGO\", \"include\": [\"Chief Growth Officer\"]}, \"cbo\": {\"acronym\": \"CBO\", \"include\": [\"Chief Business Officer\"]}, \"cao\": {\"acronym\": \"CAO\", \"include\": [\"Chief Administrative Officer\"]}, \"cxo\": {\"acronym\": \"CXO\", \"include\": [\"Chief Experience Officer\"]}, \"cmo-medical\": {\"acronym\": \"CMO\", \"include\": [\"Chief Medical Officer\"], \"confused_with\": [\"cmo\"]}}};\n\n// One Sales Navigator people search per role: your base search's filters + the role's exact titles.\nconst s = $('Your settings').first().json;\nconst q = t => encodeURIComponent('\"' + t + '\"');\nconst titleFilter = r => {\n  const p = [...CATALOG.roles[r].include, ...(CATALOG.roles[r].acronym_ok ? [CATALOG.roles[r].acronym] : [])];\n  const v = p.map(t => `(text:${q(t)},selectionType:INCLUDED)`)\n    .concat(CATALOG.exclude.map(t => `(text:${q(t)},selectionType:EXCLUDED)`));\n  return `(type:CURRENT_TITLE,values:List(${v.join(',')}))`;\n};\nconst SEARCH = 'https://www.linkedin.com/sales/search/people?query=';\nlet base = null;\nif (s.base_search_url) {\n  base = decodeURIComponent(decodeURIComponent(s.base_search_url.split('query=')[1].split('&')[0]));\n  if (base.includes('type:CURRENT_TITLE')) throw new Error('Remove the job title filter from your base search.');\n  base = base.replace(/text:([^,)]*)/g, (m, t) => 'text:' + encodeURIComponent(t))\n             .replace(/recentSearchParam:\\(id:\\d+,doLogHistory:true\\),?/, '');\n}\nconst roles = String(s.roles).split(',').map(r => r.trim()).filter(Boolean);\nconst bad = roles.filter(r => !CATALOG.roles[r]);\nif (bad.length) throw new Error('Unknown role: ' + bad.join(', '));\nreturn roles.map(role => ({ json: {\n  role,\n  name: `${s.list_name} - ${role}`,\n  search_url: base ? SEARCH + base.replace('filters:List(', `filters:List(${titleFilter(role)},`)\n                   : `${SEARCH}(filters:List(${titleFilter(role)}))`,\n} }));\n"
+      },
+      "id": "8648e4ab-cc90-43de-9fe9-9bc39641c702",
+      "name": "Role searches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.evaboot.com/mcp",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "export_sn_search_or_list",
+          "cachedResultName": "export_sn_search_or_list"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ search_url: $json.search_url, name: $json.name, max_results: $('Your settings').first().json.max_per_role }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "0112fae7-bb03-45ba-a233-d83c919759ba",
+      "name": "Start export",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "",
+          "name": "Evaboot MCP (Bearer)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Keep each role next to its export id.\nconst roles = $('Role searches').all();\nreturn $input.all().map((it, i) => ({ json: {\n  role: roles[i].json.role,\n  extraction_id: it.json.structuredContent?.result?.extraction_id,\n} }));\n"
+      },
+      "id": "68a209d7-6ae8-4492-9206-60cdde770c6e",
+      "name": "Export ids",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "id": "61d258d1-3539-46cd-b271-7adbde225f71",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        0
+      ],
+      "webhookId": "5b9d7f48-0690-427d-a686-7f9674fdb5ee"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.evaboot.com/mcp",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "get_export",
+          "cachedResultName": "get_export"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ extraction_id: $json.extraction_id }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "603cdf23-ed6c-463d-b1ea-f0d80307f72d",
+      "name": "Get the leads",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        0
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "",
+          "name": "Evaboot MCP (Bearer)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Done when every export is finished. The leads stay on \"Get the leads\".\nconst all = $input.all().map(i => i.json.structuredContent?.result || {});\nconst running = all.filter(r => !['EXECUTED', 'FAILED'].includes(r.status));\nreturn [{ json: { done: running.length === 0, running: running.map(r => r.search_name) } }];\n"
+      },
+      "id": "c1eeb457-54a3-44aa-9e39-f5c605b0e417",
+      "name": "All finished?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0f0d196b-27c8-4950-b656-eaf8741ce764",
+              "leftValue": "={{ $json.done }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "05c8609e-6d8d-4b01-8528-bd279057041d",
+      "name": "Finished",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const CATALOG = {\"exclude\": [\"Chief of Staff\", \"Office of the\", \"Assistant to\", \"Deputy\", \"Fractional\", \"Virtual\", \"vCISO\", \"Advisor to\"], \"roles\": {\"ceo\": {\"acronym\": \"CEO\", \"include\": [\"Chief Executive Officer\"]}, \"cfo\": {\"acronym\": \"CFO\", \"include\": [\"Chief Financial Officer\"]}, \"coo\": {\"acronym\": \"COO\", \"include\": [\"Chief Operating Officer\"]}, \"cto\": {\"acronym\": \"CTO\", \"include\": [\"Chief Technology Officer\"]}, \"cmo\": {\"acronym\": \"CMO\", \"include\": [\"Chief Marketing Officer\"]}, \"cro-revenue\": {\"acronym\": \"CRO\", \"include\": [\"Chief Revenue Officer\"], \"confused_with\": [\"cro-risk\"]}, \"chro\": {\"acronym\": \"CHRO\", \"include\": [\"Chief Human Resources Officer\"], \"confused_with\": [\"cpo-people\"]}, \"cdo-data\": {\"acronym\": \"CDO\", \"include\": [\"Chief Data Officer\", \"Chief Data and Analytics Officer\"], \"confused_with\": [\"cdo-digital\", \"cdo-diversity\"]}, \"cdo-digital\": {\"acronym\": \"CDO\", \"include\": [\"Chief Digital Officer\"], \"confused_with\": [\"cdo-data\", \"cdo-diversity\"]}, \"cdo-diversity\": {\"acronym\": \"CDO\", \"include\": [\"Chief Diversity Officer\"], \"confused_with\": [\"cdo-data\", \"cdo-digital\"]}, \"cpo-product\": {\"acronym\": \"CPO\", \"include\": [\"Chief Product Officer\"], \"confused_with\": [\"cpo-people\", \"cpo-procurement\", \"cpo-privacy\"]}, \"cpo-people\": {\"acronym\": \"CPO\", \"include\": [\"Chief People Officer\"], \"confused_with\": [\"cpo-product\", \"cpo-procurement\", \"cpo-privacy\", \"chro\"]}, \"cpo-procurement\": {\"acronym\": \"CPO\", \"include\": [\"Chief Procurement Officer\"], \"confused_with\": [\"cpo-product\", \"cpo-people\", \"cpo-privacy\"]}, \"cpo-privacy\": {\"acronym\": \"CPO\", \"include\": [\"Chief Privacy Officer\"], \"confused_with\": [\"cpo-product\", \"cpo-people\", \"cpo-procurement\"]}, \"clo-legal\": {\"acronym\": \"CLO\", \"include\": [\"Chief Legal Officer\"], \"confused_with\": [\"clo-learning\"]}, \"clo-learning\": {\"acronym\": \"CLO\", \"include\": [\"Chief Learning Officer\"], \"confused_with\": [\"clo-legal\"]}, \"cco-commercial\": {\"acronym\": \"CCO\", \"include\": [\"Chief Commercial Officer\"], \"confused_with\": [\"cco-customer\", \"cco-compliance\", \"cco-communications\", \"cco-creative\"]}, \"cco-compliance\": {\"acronym\": \"CCO\", \"include\": [\"Chief Compliance Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-customer\", \"cco-communications\", \"cco-creative\"]}, \"cco-creative\": {\"acronym\": \"CCO\", \"include\": [\"Chief Creative Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-customer\", \"cco-compliance\", \"cco-communications\"]}, \"cco-customer\": {\"acronym\": \"CCO\", \"include\": [\"Chief Customer Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-compliance\", \"cco-communications\", \"cco-creative\"]}, \"cco-communications\": {\"acronym\": \"CCO\", \"include\": [\"Chief Communications Officer\"], \"confused_with\": [\"cco-commercial\", \"cco-customer\", \"cco-compliance\", \"cco-creative\"]}, \"ciso\": {\"acronym\": \"CISO\", \"include\": [\"Chief Information Security Officer\"], \"acronym_ok\": true}, \"cio-information\": {\"acronym\": \"CIO\", \"include\": [\"Chief Information Officer\"], \"confused_with\": [\"cio-investment\"]}, \"cio-investment\": {\"acronym\": \"CIO\", \"include\": [\"Chief Investment Officer\"], \"confused_with\": [\"cio-information\"]}, \"cso-strategy\": {\"acronym\": \"CSO\", \"include\": [\"Chief Strategy Officer\"], \"confused_with\": [\"cso-sales\", \"cso-security\", \"cso-science\", \"cso-sustainability\"]}, \"cso-sales\": {\"acronym\": \"CSO\", \"include\": [\"Chief Sales Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-security\", \"cso-science\", \"cso-sustainability\"]}, \"cso-science\": {\"acronym\": \"CSO\", \"include\": [\"Chief Scientific Officer\", \"Chief Science Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-sales\", \"cso-security\", \"cso-sustainability\"]}, \"cso-security\": {\"acronym\": \"CSO\", \"include\": [\"Chief Security Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-sales\", \"cso-science\", \"cso-sustainability\", \"ciso\"]}, \"cso-sustainability\": {\"acronym\": \"CSO\", \"include\": [\"Chief Sustainability Officer\"], \"confused_with\": [\"cso-strategy\", \"cso-sales\", \"cso-science\", \"cso-security\"]}, \"cro-risk\": {\"acronym\": \"CRO\", \"include\": [\"Chief Risk Officer\"], \"confused_with\": [\"cro-revenue\"]}, \"caio\": {\"acronym\": \"CAIO\", \"include\": [\"Chief AI Officer\", \"Chief Artificial Intelligence Officer\"], \"acronym_ok\": true}, \"cgo\": {\"acronym\": \"CGO\", \"include\": [\"Chief Growth Officer\"]}, \"cbo\": {\"acronym\": \"CBO\", \"include\": [\"Chief Business Officer\"]}, \"cao\": {\"acronym\": \"CAO\", \"include\": [\"Chief Administrative Officer\"]}, \"cxo\": {\"acronym\": \"CXO\", \"include\": [\"Chief Experience Officer\"]}, \"cmo-medical\": {\"acronym\": \"CMO\", \"include\": [\"Chief Medical Officer\"], \"confused_with\": [\"cmo\"]}}};\n\n// Same rules as scripts/csuite.py clean: right current title, Evaboot re-check, safe email, one row per person.\nconst s = $('Your settings').first().json;\nconst okStatus = s.keep_riskier ? ['safe', 'riskier'] : ['safe'];\nconst norm = t => String(t || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim();\nconst has = (title, phrase) => (' ' + title + ' ').includes(' ' + norm(phrase) + ' ');\nfunction why(role, p) {\n  const title = norm(p['Current Job']);\n  const r = CATALOG.roles[role];\n  if (CATALOG.exclude.some(x => has(title, x))) return 'excluded title (chief of staff, deputy, fractional...)';\n  if (r.include.some(x => title.includes(norm(x)))) return null;\n  for (const o of r.confused_with || [])\n    if (CATALOG.roles[o].include.some(x => title.includes(norm(x)))) return `other meaning of ${r.acronym}: ${o}`;\n  if (has(title, r.acronym)) return r.acronym_ok ? null : `bare ${r.acronym}: ambiguous, check by hand`;\n  return 'current title is not this role (LinkedIn matched another position)';\n}\nconst ids = $('Export ids').all().map(i => i.json);\nconst results = $('Get the leads').all().map(i => i.json.structuredContent?.result || {});\nconst seen = {}, out = [];\nresults.forEach((res, i) => {\n  const role = ids[i].role;\n  for (const p of res.prospects || []) {\n    let reason = why(role, p);\n    if (!reason && p['Matches Filters'] !== 'YES') reason = 'Evaboot re-check: ' + p['No Match Reasons'];\n    if (!reason && !okStatus.includes(p['Email Status'])) reason = 'email ' + (p['Email Status'] || 'not found');\n    const id = p['Linkedin URL Unique ID'] || p['Linkedin URL Public'];\n    if (!reason && seen[id]) { seen[id].role += '+' + role; continue; }\n    const row = {\n      role, acronym: CATALOG.roles[role].acronym, first_name: p['First Name'], last_name: p['Last Name'],\n      title: p['Current Job'], company: p['Company Name'], company_domain: p['Company Domain'],\n      email: p['Email'], email_status: p['Email Status'], linkedin: p['Linkedin URL Public'],\n      kept: reason ? 'no' : 'yes', reason: reason || '',\n    };\n    if (!reason) seen[id] = row;\n    out.push(row);\n  }\n});\nreturn out.map(json => ({ json }));\n"
+      },
+      "id": "30cde466-d187-44e1-b5ed-1ee5e1fc5e30",
+      "name": "Clean list",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "c-suite-list.csv"
+        }
+      },
+      "id": "95db42d4-ca0d-4e21-a114-aa685314c281",
+      "name": "CSV file",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2200,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Export ids').all();\n"
+      },
+      "id": "ea61645e-1dd8-45c5-addf-1231fc7c3f90",
+      "name": "Check again",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        140
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Your settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Your settings": {
+      "main": [
+        [
+          {
+            "node": "Role searches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Role searches": {
+      "main": [
+        [
+          {
+            "node": "Start export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start export": {
+      "main": [
+        [
+          {
+            "node": "Export ids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export ids": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get the leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the leads": {
+      "main": [
+        [
+          {
+            "node": "All finished?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All finished?": {
+      "main": [
+        [
+          {
+            "node": "Finished",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean list": {
+      "main": [
+        [
+          {
+            "node": "CSV file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check again": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finished": {
+      "main": [
+        [
+          {
+            "node": "Clean list",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
